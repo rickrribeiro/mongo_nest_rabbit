@@ -1,0 +1,37 @@
+version: '3'
+
+networks:
+  rabbitmq_net:
+    driver: bridge
+
+volumes:
+  mongodata:
+  rabbitmq_data:
+  rabbitmq_log:
+
+services:
+  mongo:
+    image: 'mongo'
+    container_name: mongo-pay
+    command: mongod --auth
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongodata:/data/db
+      - ./init-mongo.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin
+      MONGO_INITDB_DATABASE: pay
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: 'rabbitmq-pay'
+    ports:
+      - 5672:5672
+      - 15672:15672
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq/
+      - rabbitmq_log:/var/log/rabbitmq/
+    networks:
+      - rabbitmq_net
